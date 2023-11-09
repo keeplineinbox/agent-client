@@ -1,1 +1,46 @@
-/* You can add global styles to this file, and also import other style files */
+@import "primeng/resources/themes/tailwind-light/theme.css";
+@import "primeng/resources/primeng.css";
+@import 'primeflex/primeflex.min.css';
+
+.h-0\.125xrem
+{
+    height: 0.125rem;
+}
+.h-1\.25xrem	
+{
+    height: 1.25rem;
+}
+
+.h-0\.75xrem	
+{
+    height: 0.75rem;
+}
+
+.w-1\.2xrem
+{
+    width: 1.25rem;
+}
+
+.w-0\.75xrem	
+{
+    width: 0.75rem;
+}
+
+.pt-0\.75xrem
+{
+    padding-top: 0.75rem;
+}
+
+.pb-0\.75xrem
+{
+    padding-bottom: 0.75rem;
+}
+
+.card {
+    background: #ffffff;
+    border: 1px solid var(--surface-border);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--card-shadow);
+    border-radius: 12px;
+}

@@ -1,0 +1,81 @@
+<app-spinner *ngIf="isLoading()"/>
+<div class="flex min-h-full flex-column justify-content-center px-4 py-12 lg:px-8" >
+	<!-- <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+	  <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Виды страхования</h2>
+	</div> -->
+  
+	<div class="mt-5 sm:mx-auto sm:w-full flex justify-content-center">
+		<div class="grid lg:w-7 md:w-10">
+            <div class="col-12 mb-4">
+                <app-stepper [steps]="steps" [currentStep]="currentStep"></app-stepper>
+            </div>
+			<form [formGroup]="form" (ngSubmit)="onSubmit()" class="col-12">
+
+                <section *ngIf="currentStep === 1" class="p-fluid p-formgrid grid">
+                    <div class="field col-12 md:col-5">
+                        <label htmlFor="policySeria">Серия полиса</label>
+                        <input pInputText type="text" name="policySeria" id="policySeria" formControlName="policySeria" required (input)="onPolicySeriaChange($event)" />
+                    </div>
+                    <div class="field col-12 md:col-7">
+                        <label htmlFor="policyNumber">Номер полиса</label>
+                        <input pInputText type="text" name="policyNumber" id="policyNumber" formControlName="policyNumber" required (input)="onPolicyNumberChange($event)" />
+                    </div>
+                    <div class="field col-12 md:col-6">
+                        <label htmlFor="govNumber">Номер авто</label>
+                        <input pInputText type="text" name="govNumber" id="govNumber" formControlName="govNumber" required (input)="onGovNumberChange($event)" />
+                    </div>
+                </section>
+
+                <section *ngIf="currentStep === 2 && insuranceForm" class="p-fluid p-formgrid grid">
+                    <div class="field col-12 text-center">
+                        <h2>Ваш новый полис</h2>
+                    </div>
+                    <div class="card w-full sm:p-1">
+                        <h4 class="mt-0">Срок действия</h4>
+                        <h3>с {{ insuranceForm.details.startDate }} г до {{ insuranceForm.details.endDate }}</h3>
+                    </div>
+                    <div class="card w-full sm:p-1">
+                        <h4 class="mt-0">Транспортное средство</h4>
+                        <h3>{{ insuranceForm.vehicle.modelCustomName }} c гос номером {{ insuranceForm.vehicle.govNumber }}</h3>
+                    </div>
+                    <div class="card w-full sm:p-1">
+                        <h4 class="mt-0">Владелец</h4>
+                        <h3 *ngIf="insuranceForm.owner.person" >{{ insuranceForm.owner.person.fullName.lastname }} {{ insuranceForm.owner.person.fullName.firstname }} {{ insuranceForm.owner.person.fullName.middlename }}</h3>
+                        <h3 *ngIf="insuranceForm.owner.person" >{{ insuranceForm.owner.person.phoneNumber }}</h3>
+                        <h3 *ngIf="insuranceForm.owner.organization" >{{ insuranceForm.owner.organization.name }}</h3>
+                        <h3 *ngIf="insuranceForm.owner.organization" >{{ insuranceForm.owner.organization.phoneNumber }}</h3>
+                    </div>
+                    <div *ngIf="insuranceForm.drivers" class="card w-full sm:p-1">
+                        <h4 class="mt-0">Водители</h4>
+                        <ol>
+                            <li *ngFor="let driver of insuranceForm.drivers">
+                                <h3>{{ driver.fullName.lastname }} {{ driver.fullName.firstname }} {{ driver.fullName.middlename }}</h3>
+                            </li>
+                        </ol>
+                    </div>
+                    <div class="card w-full sm:p-1">
+                        <h4 class="mt-0">Стоимость</h4>
+                        <h3>{{ cost }} сум</h3>
+                    </div>
+                    <div class="field col-12 text-center">
+                        <h2 class="mb-0">Все верно?</h2>
+                    </div>
+                </section>
+                
+                <section *ngIf="currentStep === 2" class="flex justify-content-between flex-wrap mt-4 px-8" >
+                    <button pButton pRipple label="Нет" (click)="changePage(true)" class="flex align-items-center justify-content-center font-bold border-round"></button>
+                    <button pButton pRipple label="Да" (click)="choseInsurerPage()" class="flex align-items-center justify-content-center font-bold border-round"></button>
+                </section>
+
+                <section *ngIf="!lastPage" class="flex justify-content-between flex-wrap mt-4" [ngClass]="{ 'flex-row-reverse': currentStep === 1 }">
+                    <button *ngIf="currentStep >= 2" (click)="changePage(false)" pButton pRipple label="Назад" class="flex align-items-center justify-content-center font-bold border-round"></button>
+                    <button [disabled]="form.invalid" *ngIf="currentStep !== 4 && currentStep !== 2" (click)="changePage(true)" pButton pRipple label="Продолжить" class="flex align-items-center justify-content-center font-bold border-round"></button>
+                    <button *ngIf="currentStep === 4" pButton pRipple label="Продолжить"  class="flex align-items-center justify-content-center font-bold border-round"></button>
+                </section>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+

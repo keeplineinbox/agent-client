@@ -1,0 +1,8 @@
+{
+    "server": {
+      "baseDir": "./dist/agent-client"
+    },
+    "https": true,
+    "files": ["app/**/*.{html,css,js}"],
+    "port": 3000
+}

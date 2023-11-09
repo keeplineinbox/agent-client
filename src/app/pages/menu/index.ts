@@ -1,0 +1,1 @@
+export {MENU_ROUTES} from './menu.routes';
