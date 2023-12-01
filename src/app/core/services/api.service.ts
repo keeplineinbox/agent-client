@@ -5,6 +5,7 @@ import { environment } from 'src/environments/environment';
 import { InsuranceForm } from '../models/eosgouz/osgovts/insuranceForm';
 import { Telegram } from '@twa-dev/types';
 import { ResponseResult } from '../models/responseResult';
+import { PersonInfo } from '../models/eosgouz/personInfo';
 
 declare global {
   interface Window {
@@ -31,6 +32,19 @@ export class ApiService {
     return this.http.get<ResponseResult<InsuranceForm>>(url, { headers });
     // const hash = window?.Telegram?.WebApp?.initData;
     // return this.http.get<InsuranceForm>(`${environment.apiUrl}/${this.url}/GetPolicyBySeriaAndNumberAndVehicleNumber/?seria=${seria}&number=${number}&vehicleNumber=${govNumber}`);
+  }
+
+  public getPersonInfoByBirthdate(birthdate: string, seria: string, number: string): Observable<ResponseResult<PersonInfo>> {
+    const hash = "query_id=AAH0al9MAgAAAPRqX0xx9eji&user=%7B%22id%22%3A5576289012%2C%22first_name%22%3A%22Neptune%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22nep2ne%22%2C%22language_code%22%3A%22ru%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1699359331&hash=beb97994d06294d0fcfdd3f777f7c190ff9f123c29bf2e09cec58ea6bfec3320"; 
+    //window?.Telegram?.WebApp?.initData;
+
+    const headers = new HttpHeaders().set('tg-hash', hash);
+
+    const url = `${environment.agentApiUrl}/${this.url}/GetPersonInfoByBirthdate/?birthDate=${birthdate}&passportSeries=${seria}&passportNumber=${number}`;
+   
+    return this.http.get<ResponseResult<PersonInfo>>(url, { headers });
+    // const hash = window?.Telegram?.WebApp?.initData;
+    // return this.http.get<PersonInfo>(`${environment.apiUrl}/${this.url}/GetPolicyBySeriaAndNumberAndVehicleNumber/?seria=${seria}&number=${number}&vehicleNumber=${govNumber}`);
   }
 
 

@@ -14,25 +14,42 @@
                 <section *ngIf="currentStep === 1" class="p-fluid p-formgrid grid">
                     <div class="field col-12 md:col-5">
                         <label htmlFor="policySeria">Серия полиса</label>
-                        <input pInputText type="text" name="policySeria" id="policySeria" formControlName="policySeria" required (input)="onPolicySeriaChange($event)" />
+                        <input pInputText type="text" 
+                            formControlName="policySeria" 
+                            name="policySeria" 
+                            id="policySeria" 
+                            required 
+                            (input)="onPolicySeriaChange($event)" />
                     </div>
                     <div class="field col-12 md:col-7">
                         <label htmlFor="policyNumber">Номер полиса</label>
-                        <input pInputText type="text" name="policyNumber" id="policyNumber" formControlName="policyNumber" required (input)="onPolicyNumberChange($event)" />
+                        <input pInputText type="text" 
+                            formControlName="policyNumber" 
+                            name="policyNumber" 
+                            id="policyNumber" 
+                            required 
+                            (input)="onPolicyNumberChange($event)" />
                     </div>
                     <div class="field col-12 md:col-6">
                         <label htmlFor="govNumber">Номер авто</label>
-                        <input pInputText type="text" name="govNumber" id="govNumber" formControlName="govNumber" required (input)="onGovNumberChange($event)" />
+                        <input pInputText type="text" 
+                            formControlName="govNumber" 
+                            name="govNumber" 
+                            id="govNumber" 
+                            required 
+                            (input)="onGovNumberChange($event)" />
                     </div>
                 </section>
+            </form>
 
+            <div class="col-12">
                 <section *ngIf="currentStep === 2 && insuranceForm" class="p-fluid p-formgrid grid">
                     <div class="field col-12 text-center">
                         <h2>Ваш новый полис</h2>
                     </div>
                     <div class="card w-full sm:p-1">
                         <h4 class="mt-0">Срок действия</h4>
-                        <h3>с {{ insuranceForm.details.startDate }} г до {{ insuranceForm.details.endDate }}</h3>
+                        <h3>с {{ insuranceForm.details.startDate | date:'dd.MM.yyyy' }} г. до {{ insuranceForm.details.endDate | date:'dd.MM.yyyy' }} г.</h3>
                     </div>
                     <div class="card w-full sm:p-1">
                         <h4 class="mt-0">Транспортное средство</h4>
@@ -63,16 +80,133 @@
                 </section>
                 
                 <section *ngIf="currentStep === 2" class="flex justify-content-between flex-wrap mt-4 px-8" >
-                    <button pButton pRipple label="Нет" (click)="changePage(true)" class="flex align-items-center justify-content-center font-bold border-round"></button>
-                    <button pButton pRipple label="Да" (click)="choseInsurerPage()" class="flex align-items-center justify-content-center font-bold border-round"></button>
+                    <button pButton pRipple label="Нет" 
+                        (click)="changePage(true)" 
+                        class="flex align-items-center justify-content-center font-bold border-round">
+                    </button>
+                    <button pButton pRipple label="Да" 
+                        (click)="choseInsurerPage()" 
+                        class="flex align-items-center justify-content-center font-bold border-round">
+                    </button>
+                </section>
+
+                <section *ngIf="currentStep === 3 && insuranceForm" class="p-fluid p-formgrid grid">
+                    <div class="field col-12 md:col-5">
+                        <label htmlFor="startDate">Дата начала</label>
+                        <p-calendar 
+                            id="startDate" 
+                            [(ngModel)]="insuranceForm.details.startDate" 
+                            [showIcon]="true" 
+                            (ngModelChange)="calaculatePremium()">
+                        </p-calendar>
+                    </div>
+                    <div class="field col-12 md:col-7">
+                        <label htmlFor="insuranceRegion">Регион</label>
+                        <p-dropdown class="w-full"
+                          id="insuranceRegion"
+                          [options]="insuranceRegions" 
+                          optionLabel="label"
+                          [(ngModel)]="selectedRegion"
+                          (ngModelChange)="calaculatePremium()">
+                        </p-dropdown>
+                    </div>
+                    <div class="field col-12 md:col-7">
+                        <label htmlFor="insurancePeriod">Период</label>
+                        <p-dropdown class="w-full"
+                          id="insurancePeriod"
+                          [options]="insurancePeriods" 
+                          optionLabel="label"
+                          [(ngModel)]="selectedInsurancePeriod"
+                          (ngModelChange)="calaculatePremium()">
+                        </p-dropdown>
+                    </div>
+                    <div class="field col-12 md:col-6">
+                        <label htmlFor="phoneNumber">Номер телефона</label>
+                        <input 
+                            *ngIf="insuranceForm.owner.person" 
+                            pInputText type="text" 
+                            name="phoneNumber" 
+                            id="phoneNumber" 
+                            [(ngModel)]="insuranceForm.owner.person.phoneNumber" 
+                            required 
+                            (input)="onPhoneNumberChange($event)" />
+                        <input 
+                            *ngIf="insuranceForm.owner.organization" 
+                            pInputText type="text" 
+                            name="phoneNumber" 
+                            id="phoneNumber" 
+                            [(ngModel)]="insuranceForm.owner.organization.phoneNumber" 
+                            required 
+                            (input)="onPhoneNumberChange($event)" />
+                    </div>
+                    <div class="field col-12 md:col-6">
+                        <p-radioButton 
+                            name="insuranceType" 
+                            [value]="true" 
+                            [(ngModel)]="insuranceForm.details.driverNumberRestriction" 
+                            inputId="limited" 
+                            (ngModelChange)="calaculatePremium()">
+                        </p-radioButton>
+                        <label for="limited" class="ml-2">С ограничением</label>
+                    </div>
+                    <div class="field col-12 md:col-6">
+                        <p-radioButton 
+                            name="insuranceType" 
+                            [value]="false" 
+                            [(ngModel)]="insuranceForm.details.driverNumberRestriction" 
+                            inputId="unlimited" 
+                            (ngModelChange)="calaculatePremium()">
+                        </p-radioButton>
+                        <label for="unlimited" class="ml-2">Без ограничения</label>
+                    </div>
+                    <div class="field col-12 md:col-6">
+                        <div *ngFor="let data of driverComponentsData; let i = index" class="mb-4">
+                            <app-osgovts-driver [data]="data" (remove)="removeDriverComponent(i)" (formSubmit)="onFormSubmit($event)"></app-osgovts-driver>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button pButton pRipple 
+                                label="Добавить водителя" 
+                                icon="pi pi-plus" 
+                                (click)="addDriverComponent()"
+                                >
+                            </button>
+                        </div>
+                    </div>
+                    <div class="field col-12 md:col-6">
+                        <h4 class="mt-0">Стоимость</h4>
+                        <h3>{{ cost }} сум</h3>
+                    </div>
+                </section>
+
+                <section *ngIf="currentStep === 4 && insuranceForm" class="p-fluid p-formgrid grid">
                 </section>
 
                 <section *ngIf="!lastPage" class="flex justify-content-between flex-wrap mt-4" [ngClass]="{ 'flex-row-reverse': currentStep === 1 }">
-                    <button *ngIf="currentStep >= 2" (click)="changePage(false)" pButton pRipple label="Назад" class="flex align-items-center justify-content-center font-bold border-round"></button>
-                    <button [disabled]="form.invalid" *ngIf="currentStep !== 4 && currentStep !== 2" (click)="changePage(true)" pButton pRipple label="Продолжить" class="flex align-items-center justify-content-center font-bold border-round"></button>
-                    <button *ngIf="currentStep === 4" pButton pRipple label="Продолжить"  class="flex align-items-center justify-content-center font-bold border-round"></button>
+                    <button 
+                        *ngIf="currentStep >= 2" 
+                        (click)="changePage(false)" 
+                        pButton pRipple 
+                        label="Назад" 
+                        class="flex align-items-center justify-content-center font-bold border-round">
+                    </button>
+                    <button 
+                        [disabled]="form.invalid" 
+                        *ngIf="currentStep !== 4 && 
+                        currentStep !== 2" 
+                        (click)="changePage(true)" 
+                        pButton pRipple 
+                        label="Продолжить" 
+                        class="flex align-items-center justify-content-center font-bold border-round">
+                    </button>
+                    <button 
+                        *ngIf="currentStep === 4" 
+                        pButton pRipple 
+                        label="Продолжить" 
+                        class="flex align-items-center justify-content-center font-bold border-round">
+                    </button>
                 </section>
-			</form>
+            </div>
+			
 		</div>
 	</div>
 </div>

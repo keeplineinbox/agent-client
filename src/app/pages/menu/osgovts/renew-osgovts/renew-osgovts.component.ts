@@ -16,10 +16,18 @@ import { CascadeSelectModule } from "primeng/cascadeselect";
 import { MultiSelectModule } from "primeng/multiselect";
 import { InputTextareaModule } from "primeng/inputtextarea";
 import { InputTextModule } from "primeng/inputtext";
+import { map, switchMap, tap } from 'rxjs';
+import { OsgovtsLists } from 'src/app/core/models/eosgouz/osgovtsLists';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { PremiumCalculationService } from 'src/app/core/services/premium-calculation.service';
+import { SelectItem } from 'primeng/api';
+import { OsgovtsDriverComponent } from 'src/app/shared/components/osgovts-driver/osgovts-driver.component';
+import { DatePipe } from '@angular/common'
 
 @Component({
   selector: 'app-renew-osgovts',
   templateUrl: './renew-osgovts.component.html',
+  styleUrls: ['renew-osgovts.component.scss'],
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
@@ -29,6 +37,7 @@ import { InputTextModule } from "primeng/inputtext";
     SpinnerComponent,
     DatepickerComponent,
     ButtonModule,
+    OsgovtsDriverComponent,
     
 		FormsModule,
 		CalendarModule,
@@ -40,9 +49,13 @@ import { InputTextModule } from "primeng/inputtext";
 		MultiSelectModule,
 		InputTextareaModule,
 		InputTextModule,
+    RadioButtonModule,
   ],
   providers: [
     ApiService,
+    OsgovtsLists,
+    PremiumCalculationService,
+    DatePipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -58,8 +71,17 @@ export class RenewOsgovtsComponent implements OnInit {
   lastPolicySeria = '';
   lastPolicyNumber = '';
   cost = 0;
+  selectedInsurancePeriod: any;
+  insurancePeriods: SelectItem[] = [];
+  selectedRegion: any;
+  insuranceRegions: SelectItem[] = [];
+  driverComponentsData: string[] = [];
   
-  constructor(private service: ApiService) { }
+  constructor(private apiService: ApiService, 
+    private osgovtsLists: OsgovtsLists,
+    private premiumCalculate: PremiumCalculationService,
+    public datepipe: DatePipe) 
+  {  }
   
   ngOnInit() {
     this.form = new FormGroup({
@@ -85,15 +107,11 @@ export class RenewOsgovtsComponent implements OnInit {
       //     '^[+]?[(]?[0-9]{3}[)]?[-s.]?[0-9]{3}[-s.]?[0-9]{4,6}$'
       //   ),
       // ]),
-
-      plan: new FormControl('arcadePlan'),
-
-      billingPeriod: new FormControl(false),
-
-      onlineService: new FormControl(null),
-      storage: new FormControl(null),
-      customProfile: new FormControl(null),
     });
+    this.insurancePeriods = this.osgovtsLists.periods;
+    this.selectedInsurancePeriod = this.osgovtsLists.periods[0];
+    this.insuranceRegions = this.osgovtsLists.regions;
+    this.selectedRegion = this.osgovtsLists.regions[0];
   }
 
   onSubmit() {
@@ -102,21 +120,106 @@ export class RenewOsgovtsComponent implements OnInit {
   }
 
   changePage(isNextPage: boolean) {
-    this.isLoading.set(true);
     if (!isNextPage) {
       return this.currentStep--;
     } else {
       if (this.currentStep === 1){
-        this.service.getPolicyBySeriaAndNumberAndVehicleNumber(this.lastPolicySeria, this.lastPolicyNumber, this.lastGovNumber)
-        .subscribe((result)=>{
+        this.isLoading.set(true);
+        this.apiService
+        .getPolicyBySeriaAndNumberAndVehicleNumber(this.lastPolicySeria, this.lastPolicyNumber, this.lastGovNumber)
+        .subscribe((result) => {
           if (result.error === 0 && result.data) {
             this.insuranceForm = result.data;
+            this.selectedRegion = this.osgovtsLists.regions.find(item => item.value === this.insuranceForm?.vehicle.regionId);
+            this.calculatePolicyPeriod();
+            console.log("radio " + this.insuranceForm.details.driverNumberRestriction);
+            this.calaculatePremium();
+            this.currentStep++;
           }
-        
+    
           this.isLoading.set(false);
-        })
+        });
       }
-      return this.currentStep++;
+      else if (this.currentStep === 2){
+        this.isLoading.set(true);
+        this.currentStep++;
+        this.isLoading.set(false);
+      }
+    }
+    return this.currentStep;
+  }
+
+  addDriverComponent() {
+    if(this.driverComponentsData.length < 5){
+      const newData = `Component ${this.driverComponentsData.length + 1}`;
+      this.driverComponentsData.push(newData);
+    }
+  }
+  removeDriverComponent(index: number) {
+    this.driverComponentsData.splice(index, 1);
+  }
+  onFormSubmit(submittedData: {birthdate: Date, passportSeria: string, passportNumber: string}) {
+    console.log('Submitted Data: ', submittedData);
+    this.isLoading.set(true);
+    let birthdateStr = this.datepipe.transform(submittedData.birthdate, 'yyyy-MM-dd');
+    this.apiService
+    .getPersonInfoByBirthdate(birthdateStr!, submittedData.passportSeria, submittedData.passportNumber)
+    .subscribe((result) => {
+      if (result.error === 0 && result.data) {
+        //this.insuranceForm = result.data;
+        console.log("radio " + result.data);
+      }
+
+      this.isLoading.set(false);
+    });
+    
+    // Handle the submitted data (for demonstration purposes, update the receivedData of the last component)
+    //if (this.driverComponentsData.length > 0) {
+    //  const lastIndex = this.driverComponentsData.length - 1;
+    //  this.driverComponentsData[lastIndex] = submittedData;
+    //}
+  }
+
+  calculatePolicyPeriod()
+  {
+    const details = this.insuranceForm?.details;
+
+    if (details?.startDate) {
+      const nowDate = new Date();
+      const lastEndDate = new Date(details.endDate);
+      
+      console.log("start " + details.startDate);
+      console.log("end " + details.endDate);
+
+      if (lastEndDate < nowDate) {
+        details.startDate = nowDate;
+      } else {
+        details.startDate = lastEndDate;
+      }
+
+      details.endDate = new Date(details.startDate);
+      details.endDate.setFullYear(details.endDate.getFullYear() + 1);
+    }
+  }
+
+  calaculatePremium()
+  {
+    console.log('works ');
+    if (this.insuranceForm)
+    {
+      console.log('vehicletypeId ' + this.insuranceForm.vehicle.typeId);
+      console.log('regionId ' + this.selectedRegion.value);
+      console.log('selectedInsurancePeriod ' + this.selectedInsurancePeriod.value);
+      console.log('discountId ' + this.insuranceForm.cost.discountId);
+      console.log('islimited ' + this.insuranceForm.details.driverNumberRestriction);
+      this.cost = this.premiumCalculate.calculateOsgovtsAmount(
+        this.insuranceForm.vehicle.typeId,
+        this.selectedRegion.value,
+        false, //vehicle.isForeignVehicle нужно найти способ определения данногопараметра из insuranceForm
+        this.selectedInsurancePeriod.value,
+        this.insuranceForm.cost.discountId,
+        this.insuranceForm.details.driverNumberRestriction,
+        0); //insuranceClaimCoefficient 
     }
   }
 
@@ -201,4 +304,7 @@ export class RenewOsgovtsComponent implements OnInit {
       policyGovControl.setValue(this.lastGovNumber);
     }
   }
+
+  onPhoneNumberChange(event: any)
+  {}
 }

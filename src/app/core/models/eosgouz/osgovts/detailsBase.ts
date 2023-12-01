@@ -4,5 +4,5 @@ export interface DetailsBase {
     insuredActivityType: string;
     startDate: Date;
     endDate: Date;
-    driverNumberRestriction: string;
+    driverNumberRestriction: boolean;
 }

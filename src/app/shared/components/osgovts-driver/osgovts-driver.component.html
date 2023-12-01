@@ -1,0 +1,37 @@
+<div class="card">
+    <form (ngSubmit)="onFormSubmit()">
+        <div>
+          <label>birthdate</label>
+          <p-calendar 
+            name="birthdate" 
+            [(ngModel)]="birthdate" 
+            [showIcon]="true">
+          </p-calendar>
+        </div>
+        <div>
+          <label>seria</label>
+          <input [(ngModel)]="passportSeria" 
+            name="passpoerSeria" 
+            pInputText 
+            type="text" 
+            required />
+        </div>
+        <div>
+          <label>number</label>
+          <input [(ngModel)]="passportNumber" 
+            name="passpoerNumber" 
+            pInputText 
+            type="text" 
+            required />
+        </div>
+        <div>
+          <button type="submit">Submit</button>
+        </div>
+    </form>
+    <!-- <input pInputText type="text" 
+        formControlName="policySeria" 
+        name="policySeria" 
+        id="policySeria" 
+        required /> -->
+    <button (click)="removeDriverComponent()">Remove</button>
+</div>
